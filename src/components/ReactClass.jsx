@@ -1,68 +1,108 @@
 import React,{useState, useEffect} from 'react'
 import '../css/Style.css'
 export default function ReactClass(props) {
-  const [UsersReact, setUsersReact]=useState([{id: 1,name:'Đinh Tuấn Anh', age:20},{id: 2, name:'Ngụy Minh Thắng', age:21},{id:3, name:'Nguyễn Anh Thư', age:22}]);
-  const [UsersJava, setUsersJava]=useState([{id: 4,name:'Bế Trọng Hiếu', age:20},{id: 5, name:'Ngô Huỳnh Đức', age:219},{id:6, name:'Nguyễn Mạnh Dũng', age:18}]);
-  const User = (props)=>{
+
+  const [UsersReact, setUsersReact]=useState(
+    [{name:'Đinh Tuấn Anh', age:20},
+  {name:'Ngụy Minh Thắng', age:21},
+  {name:'Nguyễn Anh Thư', age:22}]);
+  const [UsersJava, setUsersJava]=useState(
+    [{name:'Bế Trọng Hiếu', age:20},
+    { name:'Ngô Huỳnh Đức', age:219},
+    {name:'Nguyễn Mạnh Dũng', age:18}]);
+
+  const Member = (props)=>{
+    const {name, age, handleTransfer}= props;
     return (
-      <div key={props.id}> name: {props.name}, age: {props.age}</div>
+      <div>
+        <div> name: {name}, age: {age}</div>
+      <button onClick={()=>{handleTransfer()}}>Transfer</button>
+      </div>
     )
   }
-
+  
   useEffect(()=>{
-    alert("Warning: React class is empty now")
-  }, [UsersReact.length==0])
-  useEffect(()=>{
-    alert("Warning: Java class is empty now")
-  }, [UsersJava.length==0])
+    if(UsersReact.length== 0){
+      alert('Warning: react class is empty now')
+    }
+    else if (UsersJava.length== 0){
+      alert('Warning: java class is empty now')
 
+    }
+  }, [UsersReact.length, UsersJava.length])
+
+
+  const TransferReactToJava=(index)=>{
+    const e1= UsersReact[index]
+    UsersReact.splice(index, 1)
+    UsersJava.push(e1)
+    setUsersReact([...UsersReact])
+    setUsersJava([...UsersJava])
+  }
+  const TransferJavaToReact=(index)=>{
+    const e1= UsersJava[index]
+    UsersJava.splice(index, 1)
+    UsersReact.push(e1)
+    setUsersReact([...UsersReact])
+    setUsersJava([...UsersJava])
+  }
+
+  const [formData, setFormData]= useState({
+    name:"",
+    age:"",
+    classType:"react",
+  })
+
+  const handleInput = (e)=>{
+    setFormData({...formData, [e.target.name]: e.target.value})
+  }
+
+  const handleSubmit =()=>{
+    if(formData.classType=="react"){
+      UsersReact.push(formData);
+      setUsersReact([...UsersReact])
+    }
+    else {
+      UsersJava.push(formData);
+      setUsersJava([...UsersJava])
+    }
+  }
   return (
     <div className="container">
       <div className="head">List members of React class</div> <br />
-      <div>{UsersReact.map((user)=> {
+      <div>{UsersReact.length> 0 ? UsersReact.map((user, index)=> {
         return(
           <div className="list react-class">
-            <User key={user.id} name={user.name} age={user.age}/>
-            <button onClick={()=>{
-              UsersJava.push(user)
-              UsersReact.splice(UsersReact.indexOf(user), 1)
-              setUsersJava([...UsersJava])
-            }}>Transfer</button>
-            <br />
+            <Member key={index} name={user.name} age={user.age} handleTransfer={()=>{TransferReactToJava(index)}}/>
           </div>
         )
-      })}</div>
+      }) : "empty"}</div>
       <br />
       <div className="head">List members of Java class</div> <br />
-      <div>{UsersJava.map((user)=> {
+      <div>{UsersJava.length>0 ? UsersJava.map((user, index)=> {
         return(
           <div className="list java-class">
-            <User key={user.id} name={user.name} age={user.age}/>
-            <button onClick={()=>{
-              UsersReact.push(user)
-              UsersJava.splice(UsersJava.indexOf(user), 1)
-              setUsersReact([...UsersReact])
-            }}>Transfer</button>
-            <br />
+            <Member key={index} name={user.name} age={user.age} handleTransfer={()=>{TransferJavaToReact(index)}}/>
           </div>
         )
-      })}</div>
+      }): "empty class"}</div>
       <br />
       <div className="head">Form add members</div> <br />
-      <div>
-        <div>
-          <span>name <input type="text" placeholder="Name..." /></span>
-        <span>age <input type="text" placeholder="Age..." /></span>
-        <span>
-          <select name="" id="">
-            <option value="">React</option>
-            <option value="">Java</option>
+      <form onSubmit={(e)=> {
+        e.preventDefault();
+        handleSubmit();
+      }}>
+      <label htmlFor="">name</label>  
+      <input type="text" name="name" value={formData.name} onChange={(e)=> handleInput(e)}/>
+      {" --- "}
+      <label htmlFor="">age</label>  
+      <input type="text" name="age" value={formData.age} onChange={(e)=> handleInput(e)}/>
+      <select name="classType" onChange={(e)=> handleInput(e)} value={formData.classType}>
+            <option value="react">React</option>
+            <option value="java">Java</option>
           </select>
-        </span>
-        </div>
-        <button>Add members</button>
-      </div>
-      <br />
+          <button>Add member</button>
+      </form>
     </div>
   )
 }
