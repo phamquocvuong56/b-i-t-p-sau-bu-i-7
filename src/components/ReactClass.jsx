@@ -23,10 +23,10 @@ export default function ReactClass(props) {
   }
   
   useEffect(()=>{
-    if(UsersReact.length== 0){
+    if(UsersReact.length=== 0){
       alert('Warning: react class is empty now')
     }
-    else if (UsersJava.length== 0){
+    else if (UsersJava.length=== 0){
       alert('Warning: java class is empty now')
 
     }
@@ -47,19 +47,18 @@ export default function ReactClass(props) {
     setUsersReact([...UsersReact])
     setUsersJava([...UsersJava])
   }
-
-  const FillReactInforToForm=(index) => {
+  const FillReactInforToForm=(user, index) => {
     setFormData({
+      ...user,
       index: index,
-      name: UsersReact[index].name,
-      age: UsersReact[index].age,
+      classType: 'react'
     })
   }
-  const FillJavaInforToForm=(index) => {
+  const FillJavaInforToForm=(user, index) => {
     setFormData({
+      ...user,
       index: index,
-      name: UsersJava[index].name,
-      age: UsersJava[index].age,
+      classType: 'java'
     })
   }
 
@@ -83,18 +82,17 @@ export default function ReactClass(props) {
     classType:"react",
   }
   const handleSubmit =()=>{
-    if(formData.classType=="react"){
-      UsersReact[formData.index] =formData;
-      setUsersReact([...UsersReact])
+    if(formData.classType==='react'){
+      UsersReact[formData.index]= formData
+      setFormData(UsersReact)
     }
-    else if (formData.classType=="java") {
-      UsersJava[formData.index]= formData;
-      setUsersJava([...UsersJava])
+    else if(formData.classType==='java'){
+      UsersJava[formData.index]= formData
+      setFormData(UsersJava)
     }
-    else {
-      alert("Please choose class type")
+    else{
+      alert('error')
     }
-    console.log(UsersReact[formData.index])
     setFormData(initData)
   }
   return (
@@ -105,7 +103,7 @@ export default function ReactClass(props) {
           <div className="list react-class">
             <Member key={index} name={user.name} age={user.age} 
             handleTransfer={()=>{TransferReactToJava(index)}}
-            fillInfor= {()=>{FillReactInforToForm(index)}
+            fillInfor= {()=>{FillReactInforToForm(user, index)}
           }/>
           </div>
         )
@@ -117,7 +115,7 @@ export default function ReactClass(props) {
           <div className="list java-class">
             <Member key={index} name={user.name} age={user.age} 
             handleTransfer={()=>{TransferJavaToReact(index)}}
-           fillInfor= {()=>{FillJavaInforToForm(index)}
+           fillInfor= {()=>{FillJavaInforToForm(user, index)}
           }/>
           </div>
         )
