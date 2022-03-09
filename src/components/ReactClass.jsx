@@ -8,15 +8,16 @@ export default function ReactClass(props) {
   {name:'Nguyễn Anh Thư', age:22}]);
   const [UsersJava, setUsersJava]=useState(
     [{name:'Bế Trọng Hiếu', age:20},
-    { name:'Ngô Huỳnh Đức', age:219},
+    { name:'Ngô Huỳnh Đức', age:21},
     {name:'Nguyễn Mạnh Dũng', age:18}]);
 
   const Member = (props)=>{
-    const {name, age, handleTransfer}= props;
+    const {name, age, handleTransfer, fillInfor}= props;
     return (
       <div>
         <div> name: {name}, age: {age}</div>
       <button onClick={()=>{handleTransfer()}}>Transfer</button>
+      <button onClick={()=>{fillInfor()}}>Edit</button>
       </div>
     )
   }
@@ -47,6 +48,21 @@ export default function ReactClass(props) {
     setUsersJava([...UsersJava])
   }
 
+  const FillReactInforToForm=(index) => {
+    setFormData({
+      index: index,
+      name: UsersReact[index].name,
+      age: UsersReact[index].age,
+    })
+  }
+  const FillJavaInforToForm=(index) => {
+    setFormData({
+      index: index,
+      name: UsersJava[index].name,
+      age: UsersJava[index].age,
+    })
+  }
+
   const [formData, setFormData]= useState({
     name:"",
     age:"",
@@ -54,18 +70,32 @@ export default function ReactClass(props) {
   })
 
   const handleInput = (e)=>{
-    setFormData({...formData, [e.target.name]: e.target.value})
+    // setFormData({...formData, [e.target.name]: e.target.value})
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData({
+            ...formData,
+            [e.target.name]: value,
+            })
   }
-
+  const initData ={
+    name:"",
+    age:"",
+    classType:"react",
+  }
   const handleSubmit =()=>{
     if(formData.classType=="react"){
-      UsersReact.push(formData);
+      UsersReact[formData.index] =formData;
       setUsersReact([...UsersReact])
     }
-    else {
-      UsersJava.push(formData);
+    else if (formData.classType=="java") {
+      UsersJava[formData.index]= formData;
       setUsersJava([...UsersJava])
     }
+    else {
+      alert("Please choose class type")
+    }
+    console.log(UsersReact[formData.index])
+    setFormData(initData)
   }
   return (
     <div className="container">
@@ -73,7 +103,10 @@ export default function ReactClass(props) {
       <div>{UsersReact.length> 0 ? UsersReact.map((user, index)=> {
         return(
           <div className="list react-class">
-            <Member key={index} name={user.name} age={user.age} handleTransfer={()=>{TransferReactToJava(index)}}/>
+            <Member key={index} name={user.name} age={user.age} 
+            handleTransfer={()=>{TransferReactToJava(index)}}
+            fillInfor= {()=>{FillReactInforToForm(index)}
+          }/>
           </div>
         )
       }) : "empty"}</div>
@@ -82,11 +115,16 @@ export default function ReactClass(props) {
       <div>{UsersJava.length>0 ? UsersJava.map((user, index)=> {
         return(
           <div className="list java-class">
-            <Member key={index} name={user.name} age={user.age} handleTransfer={()=>{TransferJavaToReact(index)}}/>
+            <Member key={index} name={user.name} age={user.age} 
+            handleTransfer={()=>{TransferJavaToReact(index)}}
+           fillInfor= {()=>{FillJavaInforToForm(index)}
+          }/>
           </div>
         )
       }): "empty class"}</div>
       <br />
+
+
       <div className="head">Form add members</div> <br />
       <form onSubmit={(e)=> {
         e.preventDefault();
@@ -101,7 +139,8 @@ export default function ReactClass(props) {
             <option value="react">React</option>
             <option value="java">Java</option>
           </select>
-          <button>Add member</button>
+          {/* <button>Add member</button> */}
+          <button>Update member</button>
       </form>
     </div>
   )
