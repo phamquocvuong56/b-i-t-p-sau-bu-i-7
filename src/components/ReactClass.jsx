@@ -123,18 +123,14 @@ export default function ReactClass(props) {
     age: "",
   });
   const handleSearchInput = (e) => {
-    console.log(searchData);
+    setSearchUsers([])
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
     setSearchData({
-      // ...searchData,
       [e.target.name]: value,
     });
     
   };
-  const resetSearchData =()=> {
-    setSearchUsers([])
-  }
   const handleSearch = () => {
     console.log(searchUsers);
     const usersReact = UsersReact.filter((user) => {
@@ -156,12 +152,6 @@ export default function ReactClass(props) {
 
 
   //sort
-  const handleReactSort = ()=>{
-
-  }
-  const handleJavaSort = ()=>{
-
-  }
   const handleSort = ()=>{
     // sx react class
     UsersReact.sort((a, b)=> a.age-b.age);
@@ -255,7 +245,6 @@ export default function ReactClass(props) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          resetSearchData()
           handleSearch();
         }}
       >
@@ -277,6 +266,7 @@ export default function ReactClass(props) {
             );
           })}
         </div>
+        <h2>Sort user</h2>
         <button onClick={()=>{handleSort()}}>Sort</button>
     </div>
   );
