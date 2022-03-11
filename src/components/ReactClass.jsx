@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "../css/Style.css";
 export default function ReactClass(props) {
   const [UsersReact, setUsersReact] = useState([
@@ -13,7 +13,7 @@ export default function ReactClass(props) {
   ]);
 
   const Member = (props) => {
-    const { name, age, handleTransfer, fillInfor } = props;
+    const { name, age, handleTransfer, handleEdit, handleDelete } = props;
     return (
       <div>
         <div>
@@ -29,23 +29,22 @@ export default function ReactClass(props) {
         </button>
         <button
           onClick={() => {
-            fillInfor();
+            handleEdit();
           }}
         >
           Edit
+        </button>
+        <button
+          onClick={() => {
+            handleDelete();
+          }}
+        >
+          Delete
         </button>
       </div>
     );
   };
 
-  const MemberSearch = (props) => {
-    const { name, age } = props;
-    return (
-      <div>
-        name: {name}, age: {age}
-      </div>
-    );
-  };
   useEffect(() => {
     if (UsersReact.length === 0) {
       alert("Warning: react class is empty now");
@@ -68,20 +67,6 @@ export default function ReactClass(props) {
     setUsersReact([...UsersReact]);
     setUsersJava([...UsersJava]);
   };
-  const FillReactInforToForm = (user, index) => {
-    setFormData({
-      ...user,
-      index: index,
-      classType: "react",
-    });
-  };
-  const FillJavaInforToForm = (user, index) => {
-    setFormData({
-      ...user,
-      index: index,
-      classType: "java",
-    });
-  };
 
   const [formData, setFormData] = useState({
     name: "",
@@ -103,68 +88,154 @@ export default function ReactClass(props) {
     age: "",
     classType: "react",
   };
+
+  // submit add and update form
   const handleSubmit = () => {
-    if (formData.classType === "react") {
-      UsersReact[formData.index] = formData;
-      setFormData(UsersReact);
-    } else if (formData.classType === "java") {
-      UsersJava[formData.index] = formData;
-      setFormData(UsersJava);
-    } else {
-      alert("error");
+    if (formData.isEdit) {
+      const {originClassType, index}= formData
+      if(originClassType!== formData.classType){
+        if(formData.classType=== 'react'){
+          UsersReact.push(formData)
+          setUsersReact([...UsersReact])
+          UsersJava.splice(index, 1)
+          setUsersJava([...UsersJava])
+        }
+        else if(formData.classType=== 'java') {
+          UsersJava.push(formData)
+          setUsersJava([...UsersJava])
+          UsersReact.splice(index, 1)
+          setUsersReact([...UsersReact])
+        }
+        else {
+          alert('your user do not have a originClassType, please add one more user with classtype to edit')
+        }
+      }
+      else {
+        if(formData.classType==='react'){
+          console.log('edit react')
+          UsersReact[index]= formData
+          setUsersReact([...UsersReact])
+        }
+        else if(formData.classType==='java'){
+          console.log('edit java')
+          UsersJava[index]= formData
+          setUsersJava([...UsersJava])
+        }
+        else {
+          alert('your user do not have a originClassType, please add one more user with classtype to edit')
+        }
+      }
+    }else{
+      if(formData.classType==='react'){
+        UsersReact.push(formData)
+        setUsersReact([...UsersReact])
+      }
+      else{
+        UsersJava.push(formData)
+        setUsersJava([...UsersJava])
+      }
     }
     setFormData(initData);
+
+    // if (formData.classType === "react") {
+    //   UsersReact[formData.index] = formData;
+    //   setFormData(UsersReact);
+    // } else if (formData.classType === "java") {
+    //   UsersJava[formData.index] = formData;
+    //   setFormData(UsersJava);
+    // } else {
+    //   alert("error");
+    // }
   };
 
-  //search
-  const [searchUsers, setSearchUsers] = useState([]);
-  const [searchData, setSearchData] = useState({
-    name: "",
-    age: "",
-  });
-  const handleSearchInput = (e) => {
-    setSearchUsers([])
-    const value =
-      e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setSearchData({
-      [e.target.name]: value,
-    });
-    
+  //search by name, sort by age
+  const [searchUsers, setSearchUsers] = useState("");
+  const sort = {
+    no: 0,
+    up: 1,
+    down: 2,
   };
-  const handleSearch = () => {
-    console.log(searchUsers);
-    const usersReact = UsersReact.filter((user) => {
-      return user.name === searchData.name ? true : false;
-    });
-    const usersJava = UsersJava.filter((user) => {
-      return user.name === searchData.name ? true : false;
-    });
-    if (usersReact.length > 0) {
-      searchUsers.push(...usersReact);
-      setSearchUsers([...searchUsers]);
-    } else if (usersJava.length > 0) {
-      searchUsers.push(...usersJava);
-      setSearchUsers([...searchUsers])
+
+  //display users from list
+  const getUsers = (list) => {
+    let res = [...list];
+    //search
+    if (searchUsers) {
+      res = res.filter((e1) => e1.name.includes(searchUsers));
     }
-    setSearchData({ name: "", age: "" });
+    // sort
+    if (sortType !== sort.no) {
+      res.sort((a, b) => {
+        if (sortType === sort.up) return parseInt(a.age) - parseInt(b.age);
+        else return parseInt(b.age) - parseInt(a.age);
+      });
+    }
+    return res;
   };
-  /// in ra từ rearch như dưới
+  const [sortType, setSortType] = useState(sort.no);
+  // change button text
+  const getSortType = () => {
+    return sortType === 0 ? "no" : sortType === 1 ? "up" : "down";
+  };
+  // change sort type wherever click the button
+  const handleSort = () => {
+    return sortType === 0
+      ? setSortType(sort.up)
+      : sortType === 1
+      ? setSortType(sort.down)
+      : setSortType(sort.no);
+  };
 
+  // edit users
 
-  //sort
-  const handleSort = ()=>{
-    // sx react class
-    UsersReact.sort((a, b)=> a.age-b.age);
-    setUsersReact([...UsersReact]);
-    UsersJava.sort((a, b)=> a.age-b.age);
-    setUsersJava([...UsersJava]);
+  const reactEdit = (index) => {
+    setFormData({ ...UsersReact[index], isEdit: true, index: index, originClassType: UsersReact[index].classType });
+    refInputFocus.current.focus();
+  };
+  const javaEdit =(index)=>{
+    setFormData({ ...UsersJava[index], isEdit: true, index: index, originClassType: UsersJava[index].classType });
+    refInputFocus.current.focus();
   }
+
+  //delete users
+
+  const reactDelete = (index)=>{
+    UsersReact.splice(index, 1);
+    setUsersReact([...UsersReact])
+  }
+  const javaDelete = (index)=>{
+    UsersJava.splice(index, 1);
+    setUsersJava([...UsersJava])
+  }
+// focus input tag
+const refInputFocus =useRef();
+
+// optimize performance thanks to useMemo
+const ReactUsersToRender = useMemo(()=>getUsers(UsersReact), [UsersReact])
+const JavaUsersToRender = useMemo(()=>getUsers(UsersJava), [UsersJava])
   return (
     <div className="container">
+      <h2>search by name</h2>
+      <div>
+        Search by name:{" "}
+        <input
+          value={searchUsers}
+          onChange={(e) => setSearchUsers(e.target.value)}
+        />
+      </div>
+      <h2>sort by age: </h2>
+      <button
+        type="button"
+        onClick={() => {
+          handleSort();
+        }}
+      >
+        Sort: {getSortType()}
+      </button>
       <div className="head">List members of React class</div> <br />
       <div>
         {UsersReact.length > 0
-          ? UsersReact.map((user, index) => {
+          ? ReactUsersToRender.map((user, index) => {
               return (
                 <div className="list react-class">
                   <Member
@@ -174,8 +245,11 @@ export default function ReactClass(props) {
                     handleTransfer={() => {
                       TransferReactToJava(index);
                     }}
-                    fillInfor={() => {
-                      FillReactInforToForm(user, index);
+                    handleEdit={() => {
+                      reactEdit(index);
+                    }}
+                    handleDelete={()=>{
+                      reactDelete(index);
                     }}
                   />
                 </div>
@@ -187,7 +261,7 @@ export default function ReactClass(props) {
       <div className="head">List members of Java class</div> <br />
       <div>
         {UsersJava.length > 0
-          ? UsersJava.map((user, index) => {
+          ? JavaUsersToRender.map((user, index) => {
               return (
                 <div className="list java-class">
                   <Member
@@ -197,9 +271,12 @@ export default function ReactClass(props) {
                     handleTransfer={() => {
                       TransferJavaToReact(index);
                     }}
-                    fillInfor={() => {
-                      FillJavaInforToForm(user, index);
-                    }}                   
+                    handleEdit={() => {
+                      javaEdit(index);
+                    }}
+                    handleDelete={()=>{
+                      javaDelete(index);
+                    }}
                   />
                 </div>
               );
@@ -207,7 +284,10 @@ export default function ReactClass(props) {
           : "empty class"}
       </div>
       <br />
-      <div className="head">Form add members</div> <br />
+      <div className="head">
+        Form {formData.isEdit ? "edit" : "add"} members
+      </div>{" "}
+      <br />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -218,6 +298,7 @@ export default function ReactClass(props) {
         <input
           type="text"
           name="name"
+          ref={refInputFocus}
           value={formData.name}
           onChange={(e) => handleInput(e)}
         />
@@ -238,36 +319,9 @@ export default function ReactClass(props) {
           <option value="java">Java</option>
         </select>
         {/* <button>Add member</button> */}
-        <button>Update member</button>
+        <button>{formData.isEdit ? "edit" : "add"} member</button>
+        <button type="button" onClick={()=>{setFormData(initData)}}>cancel</button>
       </form>
-      <br />
-      <h2>Search user by name</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSearch();
-        }}
-      >
-        <label htmlFor="">Enter your name: </label>
-        <input
-          type="text"
-          name="name"
-          value={searchData.name}
-          onChange={(e) => handleSearchInput(e)}
-        />
-        <button>Search</button>
-      </form>
-      <div>
-          {searchUsers.map((user) => {
-            return (
-              <div>
-                <MemberSearch name={user.name} age={user.age} />
-              </div>
-            );
-          })}
-        </div>
-        <h2>Sort user</h2>
-        <button onClick={()=>{handleSort()}}>Sort</button>
     </div>
   );
 }
